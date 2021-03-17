@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
 #endif
 
     size_t num_valid_insns = 0;
-    size_t num_bad_insn = 0;
+    size_t num_bad_insns = 0;
     size_t read_offs;
     clock_t start_time = clock();
     for (int i = 0; i < loop_count; ++i)
@@ -57,7 +57,7 @@ int main(int argc, char* argv[])
             if (!ZYAN_SUCCESS(status))
             {
                 ++read_offs;
-                ++num_bad_insn;
+                ++num_bad_insns;
                 continue;
             }
 
@@ -76,9 +76,9 @@ int main(int argc, char* argv[])
 
     printf(
         "Disassembled %zu instructions (%zu valid, %zu bad), %.2f ms\n", 
-        num_valid_insns + num_bad_insn,
+        num_valid_insns + num_bad_insns,
         num_valid_insns,
-        num_bad_insn,
+        num_bad_insns,
         (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC
     );
 

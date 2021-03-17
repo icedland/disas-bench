@@ -11,7 +11,7 @@ int main(int argc, char* argv[])
     size_t code_len_iter = 0;
     uint64_t ip = 0;
     size_t num_valid_insns = 0;
-    size_t num_bad_insn = 0;
+    size_t num_bad_insns = 0;
     size_t round;
 
     if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK)
@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
             {
                 ++code_iter;
                 --code_len_iter;
-                ++num_bad_insn;
+                ++num_bad_insns;
             }
             else
             {
@@ -66,9 +66,9 @@ int main(int argc, char* argv[])
 
     printf(
         "Disassembled %zu instructions (%zu valid, %zu bad), %.2f ms\n", 
-        num_valid_insns + num_bad_insn,
+        num_valid_insns + num_bad_insns,
         num_valid_insns,
-        num_bad_insn,
+        num_bad_insns,
         (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC
     );
 

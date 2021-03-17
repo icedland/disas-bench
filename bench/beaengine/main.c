@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     disasm.Archi = 64;
 
     size_t num_valid_insns = 0;
-    size_t num_bad_insn = 0;
+    size_t num_bad_insns = 0;
     UIntPtr code_end = (UIntPtr)code + code_len;
     clock_t start_time = clock();
     for (size_t round = 0; round < loop_count; ++round)
@@ -28,7 +28,7 @@ int main(int argc, char *argv[])
             int res = Disasm(&disasm);
             if (res < 0)
             {
-                num_bad_insn++;
+                num_bad_insns++;
                 code_curr++;
             }
             else
@@ -42,9 +42,9 @@ int main(int argc, char *argv[])
 
     printf(
         "Disassembled %zu instructions (%zu valid, %zu bad), %.2f ms\n",
-        num_valid_insns + num_bad_insn,
+        num_valid_insns + num_bad_insns,
         num_valid_insns,
-        num_bad_insn,
+        num_bad_insns,
         (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC);
 
     return 0;

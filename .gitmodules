@@ -19,3 +19,9 @@
 [submodule "libs/mbuild"]
 	path = libs/mbuild
 	url = https://github.com/intelxed/mbuild.git
+[submodule "libs/udis86"]
+	path = libs/udis86
+	url = https://github.com/vmt/udis86.git
+[submodule "libs/beaengine"]
+	path = libs/beaengine
+	url = https://github.com/BeaEngine/beaengine.git

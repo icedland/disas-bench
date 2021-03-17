@@ -102,6 +102,36 @@ else
 fi
 cd ../..
 
+# Build udis86
+
+echo "[*] Building udis86 ..."
+cd libs/udis86
+# Patch code that doesn't work with Python 3.x
+sed -i -e 's/indent, k, e/indent, int(k), e/' scripts/ud_opcode.py
+if [[ "$is_windows" == "y" ]]; then
+    $python scripts/ud_itab.py docs/x86/optable.xml libudis86/
+    # If this fails, change the PlatformToolset version to whatever version of VS you have installed
+    #   https://docs.microsoft.com/cpp/build/how-to-modify-the-target-framework-and-platform-toolset#platform-toolset
+    msbuild.exe BuildVS2010/libudis86.vcxproj -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v142
+else
+    ./autogen.sh
+    ./configure --enable-static=yes
+    make
+fi
+git checkout scripts/ud_opcode.py
+cd ../..
+
+echo "[*] Building BeaEngine ..."
+cd libs/beaengine
+# It's decode+disasm unless `-DoptBUILD_LITE=on` is used (decode only), but if we add it, we get errors
+cmake -DoptHAS_OPTIMIZED=on -DoptHAS_SYMBOLS=off -DoptBUILD_64BIT=on .
+if [[ "$is_windows" == "y" ]]; then
+    msbuild.exe BeaEngine.sln -p:Configuration=Release -p:Platform=x64
+else
+    make
+fi
+cd ../..
+
 # Build benchmark tools
 
 echo "[*] Building Capstone benchmark ..."
@@ -143,6 +173,16 @@ cd ../..
 
 echo "[*] Building yaxpeax-x86 benchmark ..."
 cd bench/yaxpeax
+$make
+cd ../..
+
+echo "[*] Building udis86 benchmark ..."
+cd bench/udis86
+$make
+cd ../..
+
+echo "[*] Building beaengine benchmark ..."
+cd bench/beaengine
 $make
 cd ../..
 

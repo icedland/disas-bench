@@ -53,6 +53,8 @@ targets = [
     ['bench/iced-x86/bench-iced-fmt', 'iced decode+fmt'],
     ['bench/bddisasm/bench-bddisasm-fmt', 'bddisasm decode+fmt'],
     ['bench/yaxpeax/bench-yaxpeax-fmt', 'yaxpeax decode+fmt'],
+    ['bench/udis86/bench-udis86-fmt', 'udis86 decode+fmt'],
+    ['bench/beaengine/bench-beaengine-fmt', 'BeaEngine decode+fmt'],
 
     # Decode only
     ['bench/zydis/bench-zydis-min-no-fmt', 'Zydis (min) decode'],
@@ -62,6 +64,7 @@ targets = [
     ['bench/iced-x86/bench-iced-no-fmt', 'iced decode'],
     ['bench/bddisasm/bench-bddisasm-no-fmt', 'bddisasm decode'],
     ['bench/yaxpeax/bench-yaxpeax-no-fmt', 'yaxpeax decode'],
+    ['bench/udis86/bench-udis86-no-fmt', 'udis86 decode'],
 ]
 timings = []
 

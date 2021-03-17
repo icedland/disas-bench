@@ -23,6 +23,10 @@ linux 5.4.72 (WSL2), GCC 8.4.0, Rust 1.50.0, i5-6600K
 
 [yaxpeax-x86](https://github.com/iximeow/yaxpeax-x86)
 
+[udis86](https://github.com/vmt/udis86)
+
+[BeaEngine](https://github.com/BeaEngine/beaengine)
+
 ## Benchmarking
 
 Windows:

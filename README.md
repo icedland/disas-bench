@@ -49,8 +49,7 @@ python3 -mvenv venv
 source venv/bin/activate
 pip install -r requirements.txt
 # Optional args: <code-offset> <code-len> <filename> [loop-count]
-# macOS/Windows: python bench.py
-LD_LIBRARY_PATH=$(pwd)/bench/distorm python bench.py
+python bench.py
 ```
 
 The optional `bench.py` arguments are:

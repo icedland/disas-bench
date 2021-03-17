@@ -70,26 +70,18 @@ cd ../..
 echo "[*] Building DiStorm ..."
 if [[ "$is_mac" == "y" ]]; then 
     distorm_subdir=mac
-    distorm_bin=libdistorm3.dylib
 elif [[ "$is_windows" == "y" ]]; then
     distorm_subdir=win32
 else
     distorm_subdir=linux
-    distorm_bin=libdistorm3.so.3.4.0
 fi
 cd libs/distorm/make/${distorm_subdir}
 if [[ "$is_windows" == "y" ]]; then
     msbuild.exe cdistorm.vcxproj -p:Configuration=clib -p:Platform=x64
 else
     $make
-    cp ${distorm_bin} ../../../../bench/distorm/
 fi
 cd ../../../..
-if [[ "$is_linux" == "y" ]]; then
-    cd bench/distorm/
-    ln -s libdistorm3.so.3.4.0 libdistorm3.so.3 || true
-    cd ../..
-fi
 
 # Build bddisasm
 

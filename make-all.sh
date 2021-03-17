@@ -65,9 +65,9 @@ cd libs/intelxed
 $python mfile.py --opt=3
 cd ../..
 
-# Build DiStorm
+# Build diStorm
 
-echo "[*] Building DiStorm ..."
+echo "[*] Building diStorm ..."
 if [[ "$is_mac" == "y" ]]; then 
     distorm_subdir=mac
 elif [[ "$is_windows" == "y" ]]; then
@@ -148,12 +148,12 @@ cd bench/xed
 $make
 cd ../..
 
-echo "[*] Building DiStorm benchmark ..."
+echo "[*] Building diStorm benchmark ..."
 cd bench/distorm
 $make
 cd ../..
 
-echo "[*] Building iced-x86 benchmark ..."
+echo "[*] Building iced benchmark ..."
 cd bench/iced-x86
 $make
 cd ../..
@@ -173,10 +173,9 @@ cd bench/udis86
 $make
 cd ../..
 
-echo "[*] Building beaengine benchmark ..."
+echo "[*] Building BeaEngine benchmark ..."
 cd bench/beaengine
 $make
 cd ../..
 
 echo "[+] All done!"
-

@@ -36,7 +36,9 @@ int main(int argc, char* argv[])
             ))
             {
             case DECRES_SUCCESS:
-                goto next;
+                if (used_insns == 0)
+                    goto next;
+                break;
             case DECRES_MEMORYERR:
                 break; 
             default:

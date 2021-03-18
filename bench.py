@@ -129,7 +129,6 @@ ax.barh(
     color='#9999ff'
 )[best].set_color('lightgreen')
 ax.set_yticks(y_pos)
-ax.set_yticks(y_pos)
 ax.set_yticklabels(libs)
 ax.invert_yaxis()  # labels read top-to-bottom
 ax.set_xlabel('MB/s')

@@ -24,7 +24,7 @@ elif len(sys.argv) == 4 or len(sys.argv) == 5:
         code_loop_count = int(sys.argv[4])
     else:
         # Match the old file + loop-count
-        code_loop_count = round(0x2460400 * 20 / file_code_len)
+        code_loop_count = max(1, round(0x2460400 * 20 / file_code_len))
 else:
     print('Expected no args or:')
     print(f'  {sys.argv[0]} <code-offset> <code-len> <filename> [loop-count]')

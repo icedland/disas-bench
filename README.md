@@ -4,6 +4,7 @@ Disassembler Benchmark
 This repository holds benchmarking code for various x86/x86-64 disassembler libraries.
 
 ## Results
+
 ![Bench](bench.png)
 linux 5.4.72 (WSL2), GCC 8.4.0, Rust 1.50.0, i5-6600K
 
@@ -40,7 +41,7 @@ REM Start git bash:
 Windows/Linux/macOS:
 
 ```bash
-git clone --recursive 'https://github.com/athre0z/disas-bench.git'
+git clone --recursive 'https://github.com/icedland/disas-bench.git'
 cd disas-bench.git
 ./make-all.sh
 # Windows: python
@@ -60,4 +61,5 @@ The optional `bench.py` arguments are:
 - `[loop-count]` = optional loop count. Total number of bytes decoded and formatted is `<code-len> * [loop-count]`
 
 ## Contributing
+
 If you feel like the benchmark for a lib doesn't drive it to its full potential or treats it unfairly, I'd be happy to accept PRs with improvements!

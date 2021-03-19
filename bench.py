@@ -78,7 +78,7 @@ assert all(os.path.exists(x[0]) for x in targets)
 with open(code_filename, 'rb') as f:
     f.read()
 
-print('[*] Performing benchmarks')
+print('[*] Running all benchmarks')
 
 for cur_target in targets:
     print(f'[*] Benchmarking {cur_target[0]} ...')

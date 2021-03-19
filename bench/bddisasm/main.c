@@ -15,7 +15,7 @@ nd_memset(void *s, int c, size_t n)
     return memset(s, c, n);
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     INSTRUX ix;
     NDSTATUS status;
@@ -31,16 +31,16 @@ int main(int argc, char* argv[])
     clock_t start_time = clock();
     for (size_t round = 0; round < loop_count; ++round)
     {
-        for (size_t read_offs = 0; read_offs < code_len; )
+        for (size_t read_offs = 0; read_offs < code_len;)
         {
             status = NdDecodeEx(
                 &ix,
                 code + read_offs,
                 code_len - read_offs,
                 ND_CODE_64,
-                ND_DATA_64
-            );
-            if (!ND_SUCCESS(status)) {
+                ND_DATA_64);
+            if (!ND_SUCCESS(status))
+            {
                 ++read_offs;
             }
             else
@@ -56,9 +56,8 @@ int main(int argc, char* argv[])
     clock_t end_time = clock();
 
     printf(
-        "%.2f ms\n", 
-        (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC
-    );
-    
+        "%.2f ms\n",
+        (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC);
+
     return 0;
 }

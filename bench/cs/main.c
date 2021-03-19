@@ -1,8 +1,7 @@
 #include "../load_bin.inc"
 #include <capstone/capstone.h>
 
-
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
     csh handle = 0;
     cs_insn *insn = NULL;
@@ -53,20 +52,21 @@ int main(int argc, char* argv[])
                 &code_iter,
                 &code_len_iter,
                 &ip,
-                insn
-            );
+                insn);
         }
     }
     clock_t end_time = clock();
 
     printf(
-        "%.2f ms\n", 
-        (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC
-    );
+        "%.2f ms\n",
+        (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC);
 
 leave:
-    if (insn) cs_free(insn, 1);
-    if (handle) cs_close(&handle);
-    if (code) free(code);
+    if (insn)
+        cs_free(insn, 1);
+    if (handle)
+        cs_close(&handle);
+    if (code)
+        free(code);
     return ret;
 }

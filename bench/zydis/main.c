@@ -1,14 +1,13 @@
 #include "../load_bin.inc"
 #include <Zydis/Zydis.h>
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 #ifndef DISAS_BENCH_NO_FORMAT
     ZydisFormatter formatter;
     if (!ZYAN_SUCCESS(ZydisFormatterInit(
-        &formatter,
-        ZYDIS_FORMATTER_STYLE_INTEL
-    )))
+            &formatter,
+            ZYDIS_FORMATTER_STYLE_INTEL)))
     {
         fputs("Unable to initialize instruction formatter\n", stderr);
         return 1;
@@ -26,15 +25,13 @@ int main(int argc, char* argv[])
     ZydisDecoderInit(
         &decoder,
         ZYDIS_MACHINE_MODE_LONG_64,
-        ZYDIS_ADDRESS_WIDTH_64
-    );
+        ZYDIS_ADDRESS_WIDTH_64);
 
 #ifdef DISAS_BENCH_DECODE_MINIMAL
     ZydisDecoderEnableMode(
         &decoder,
         ZYDIS_DECODER_MODE_MINIMAL,
-        ZYAN_TRUE
-    );
+        ZYAN_TRUE);
 #endif
 
     size_t read_offs;
@@ -46,17 +43,15 @@ int main(int argc, char* argv[])
         ZyanStatus status;
         ZydisDecodedInstruction info;
         while ((status = ZydisDecoderDecodeBuffer(
-            &decoder,
-            code + read_offs,
-            code_len - read_offs,
-            &info
-        )) != ZYDIS_STATUS_NO_MORE_DATA)
+                    &decoder,
+                    code + read_offs,
+                    code_len - read_offs,
+                    &info)) != ZYDIS_STATUS_NO_MORE_DATA)
         {
 #ifndef DISAS_BENCH_NO_FORMAT
             char printBuffer[256];
             ZydisFormatterFormatInstruction(
-                &formatter, &info, printBuffer, sizeof(printBuffer), read_offs
-            );
+                &formatter, &info, printBuffer, sizeof(printBuffer), read_offs);
 #endif
 
             read_offs += info.length;
@@ -65,9 +60,8 @@ int main(int argc, char* argv[])
     clock_t end_time = clock();
 
     printf(
-        "%.2f ms\n", 
-        (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC
-    );
+        "%.2f ms\n",
+        (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC);
 
     free(code);
     return 0;

@@ -76,9 +76,6 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
     let elapsed = time.elapsed().unwrap();
-    println!(
-        "{} ms",
-        elapsed.as_millis(),
-    );
+    println!("{} ms", elapsed.as_millis());
     Ok(())
 }

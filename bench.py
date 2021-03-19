@@ -97,7 +97,8 @@ for cur_target in targets:
     diff = time.time() - prev
     os.chdir(pwd)
     if process.returncode != 0:
-        raise ValueError(f'{cur_target[0]} exited with code {process.returncode}')
+        raise ValueError(
+            f'{cur_target[0]} exited with code {process.returncode}')
     output = process.stdout.decode('utf-8')
     m = re.search('(\S+) ms', output)
     if m is None:
@@ -123,8 +124,8 @@ y_pos = np.arange(len(libs))
 best = mbs.index(max(mbs))
 
 ax.barh(
-    y_pos, 
-    mbs, 
+    y_pos,
+    mbs,
     align='center',
     color='#9999ff'
 )[best].set_color('lightgreen')

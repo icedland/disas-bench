@@ -65,16 +65,11 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     offset += instruction.len();
                 }
-                Err(_) => {
-                    offset += 1;
-                }
+                Err(_) => offset += 1,
             }
         }
     }
     let elapsed = time.elapsed().unwrap();
-    println!(
-        "{} ms",
-        elapsed.as_millis(),
-    );
+    println!("{} ms", elapsed.as_millis());
     Ok(())
 }

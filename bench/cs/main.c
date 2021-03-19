@@ -10,13 +10,17 @@ int main(int argc, char* argv[])
     const uint8_t *code_iter = NULL;
     size_t code_len_iter = 0;
     uint64_t ip = 0;
-    size_t num_valid_insns = 0;
-    size_t num_bad_insns = 0;
     size_t round;
 
     if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK)
     {
         fputs("Unable to create Capstone handle\n", stderr);
+        ret = 1;
+        goto leave;
+    }
+    if (cs_option(handle, CS_OPT_SKIPDATA, CS_OPT_ON) != CS_ERR_OK)
+    {
+        fputs("Unable to set SKIPDATA=ON\n", stderr);
         ret = 1;
         goto leave;
     }
@@ -44,31 +48,19 @@ int main(int argc, char* argv[])
         code_len_iter = code_len;
         while (code_len_iter > 0)
         {
-            if (!cs_disasm_iter(
+            cs_disasm_iter(
                 handle,
                 &code_iter,
                 &code_len_iter,
                 &ip,
                 insn
-            ))
-            {
-                ++code_iter;
-                --code_len_iter;
-                ++num_bad_insns;
-            }
-            else
-            {
-                ++num_valid_insns;
-            }
+            );
         }
     }
     clock_t end_time = clock();
 
     printf(
-        "Disassembled %zu instructions (%zu valid, %zu bad), %.2f ms\n", 
-        num_valid_insns + num_bad_insns,
-        num_valid_insns,
-        num_bad_insns,
+        "%.2f ms\n", 
         (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC
     );
 

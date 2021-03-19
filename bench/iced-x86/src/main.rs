@@ -62,39 +62,22 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut instruction = Instruction::default();
 
-    let mut num_valid_insns: usize = 0;
-    let mut num_bad_insns: usize = 0;
     let time = std::time::SystemTime::now();
     for _ in 0..loop_count {
         decoder.try_set_position(0).unwrap();
         decoder.set_ip(0);
         while decoder.can_decode() {
             decoder.decode_out(&mut instruction);
-
-            if !instruction.is_invalid() {
-                #[cfg(feature = "formatter")]
-                {
-                    text.clear();
-                    formatter.format(&instruction, &mut text);
-                }
-
-                num_valid_insns += 1;
-                // position is automatically updated in the happy path
-            } else {
-                num_bad_insns += 1;
-                // manually seek forward one byte to try again
-                decoder
-                    .try_set_position(decoder.position() - instruction.len() + 1)
-                    .unwrap();
+            #[cfg(feature = "formatter")]
+            {
+                text.clear();
+                formatter.format(&instruction, &mut text);
             }
         }
     }
     let elapsed = time.elapsed().unwrap();
     println!(
-        "Disassembled {} instructions ({} valid, {} bad), {} ms",
-        num_valid_insns + num_bad_insns,
-        num_valid_insns,
-        num_bad_insns,
+        "{} ms",
         elapsed.as_millis(),
     );
     Ok(())

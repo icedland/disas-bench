@@ -18,8 +18,6 @@ int main(int argc, char *argv[])
 #endif
     ud_set_vendor(&ud_obj, UD_VENDOR_ANY);
 
-    size_t num_valid_insns = 0;
-    size_t num_bad_insns = 0;
     clock_t start_time = clock();
     for (size_t round = 0; round < loop_count; ++round)
     {
@@ -35,25 +33,12 @@ int main(int argc, char *argv[])
 #endif
             if (len <= 0)
                 break;
-
-            if (ud_obj.mnemonic == UD_Iinvalid)
-            {
-                num_bad_insns++;
-                ud_obj.inp_buf_index -= (size_t)len - 1;
-            }
-            else
-            {
-                num_valid_insns++;
-            }
         }
     }
     clock_t end_time = clock();
 
     printf(
-        "Disassembled %zu instructions (%zu valid, %zu bad), %.2f ms\n",
-        num_valid_insns + num_bad_insns,
-        num_valid_insns,
-        num_bad_insns,
+        "%.2f ms\n",
         (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC);
 
     return 0;

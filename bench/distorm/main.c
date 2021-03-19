@@ -10,8 +10,6 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    size_t num_valid_insns = 0;
-    size_t num_bad_insns = 0;
     clock_t start_time = clock();
     for (int i = 0; i < loop_count; ++i)
     {
@@ -45,33 +43,17 @@ int main(int argc, char* argv[])
                 return 1;
             }
 
+#ifndef DISAS_BENCH_NO_FORMAT
             for (size_t i = 0; i < used_insns; ++i)
             {
-                if (insns[i].flags == FLAG_NOT_DECODABLE)
-                {
-                    ++num_bad_insns;
-                }
-                else 
-                {
-                    ++num_valid_insns;
-
-#ifndef DISAS_BENCH_NO_FORMAT
-                    _DecodedInst instr_fmt;
-                    distorm_format64(
-                        &ci,
-                        insns + i,
-                        &instr_fmt
-                    );
-                    /*
-                    printf(
-                        "%s %s\n", 
-                        instr_fmt.mnemonic.p,
-                        instr_fmt.operands.p
-                    );
-                    */
-#endif
-                }
+                _DecodedInst instr_fmt;
+                distorm_format64(
+                    &ci,
+                    insns + i,
+                    &instr_fmt
+                );
             }
+#endif
 
             size_t offs = (
                 insns[used_insns - 1].addr + 
@@ -86,10 +68,7 @@ int main(int argc, char* argv[])
     clock_t end_time = clock();
 
     printf(
-        "Disassembled %zu instructions (%zu valid, %zu bad), %.2f ms\n", 
-        num_valid_insns + num_bad_insns,
-        num_valid_insns,
-        num_bad_insns,
+        "%.2f ms\n", 
         (double)(end_time - start_time) * 1000.0 / CLOCKS_PER_SEC
     );
 

@@ -99,11 +99,11 @@ for cur_target in targets:
     if process.returncode != 0:
         raise ValueError(f'{cur_target[0]} exited with code {process.returncode}')
     output = process.stdout.decode('utf-8')
-    m = re.search('Disassembled (\d+) instructions \((\d+) valid, (\d+) bad\), (\S+) ms', output)
+    m = re.search('(\S+) ms', output)
     if m is None:
         raise ValueError(f"Couldn't parse output: `{output}`")
     groups = m.groups()
-    total_s = float(groups[3]) / 1000.0
+    total_s = float(groups[0]) / 1000.0
 
     print(output, end='')
     timings.append(total_s)

@@ -49,8 +49,6 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut instruction = amd64::Instruction::default();
 
-    let mut num_valid_insns: usize = 0;
-    let mut num_bad_insns: usize = 0;
     let time = std::time::SystemTime::now();
     for _ in 0..loop_count {
         let mut offset = 0u64;
@@ -65,12 +63,9 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
                             .expect("can format successfully");
                     }
 
-                    num_valid_insns += 1;
                     offset += instruction.len();
                 }
                 Err(_) => {
-                    num_bad_insns += 1;
-                    // manually seek forward one byte to try again
                     offset += 1;
                 }
             }
@@ -78,10 +73,7 @@ pub fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
     let elapsed = time.elapsed().unwrap();
     println!(
-        "Disassembled {} instructions ({} valid, {} bad), {} ms",
-        num_valid_insns + num_bad_insns,
-        num_valid_insns,
-        num_bad_insns,
+        "{} ms",
         elapsed.as_millis(),
     );
     Ok(())

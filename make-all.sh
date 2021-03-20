@@ -65,9 +65,9 @@ else
 fi
 cd ../../..
 
-# Build Intel XED
+# Build XED
 
-echo "[*] Building Intel XED ..."
+echo "[*] Building XED ..."
 cd libs/intelxed
 if [[ "$is_windows" == "y" ]]; then
     $python mfile.py --no-encoder --opt=3 --extra-flags=-GL
@@ -171,7 +171,7 @@ else
 fi
 cd ../..
 
-echo "[*] Building Intel XED benchmark ..."
+echo "[*] Building XED benchmark ..."
 cd bench/xed
 $make
 cd ../..

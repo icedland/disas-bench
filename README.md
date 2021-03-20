@@ -14,7 +14,7 @@ linux 5.4.72 (WSL2), GCC 8.4.0, Rust 1.50.0, i5-6600K
 
 [DiStorm](https://github.com/gdabah/distorm)
 
-[Intel XED](https://github.com/intelxed/xed)
+[XED](https://github.com/intelxed/xed)
 
 [Zydis](https://github.com/zyantific/zydis)
 

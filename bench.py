@@ -226,7 +226,7 @@ def main():
     options = parse_command_line()
     run_benchmarks(options, targets)
 
-    print("[*] Generating charts")
+    print("[*] Generating charts and MD tables")
     generate_chart("Throughput", "", "bench.png", [BenchResult(
         x.bench_kind, x.bench_name, x.time_s, x.mb_per_secs) for x in targets])
     generate_chart("Throughput", "decode + format", "bench-decode-fmt.png", [BenchResult(

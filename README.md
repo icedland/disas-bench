@@ -60,6 +60,40 @@ The optional `bench.py` arguments are:
 - `<filename>` = 64-bit x86 binary file to decode and format
 - `[loop-count]` = optional loop count. Total number of bytes decoded and formatted is `<code-len> * [loop-count]`
 
+You can use `dumpbin.exe` (Windows) or `objdump` to get the offset and size of the code section.
+
+### dumpbin (start "x64 Native Tools Command Prompt for VS 2019")
+
+Find `.text` section and use `<code-len> = virtual size` (`4CFA6B6` below) and `<code-offset> = file pointer to raw data` (`400` below). All values are in hex so add a 0x prefix when passing the values to `bench.py`.
+
+```text
+C:\path> dumpbin -headers filename.dll
+
+...
+SECTION HEADER #1
+   .text name
+ 4CFA6B6 virtual size
+    1000 virtual address (0000000180001000 to 0000000184CFB6B5)
+ 4CFA800 size of raw data
+     400 file pointer to raw data (00000400 to 04CFABFF)
+...
+```
+
+### objdump
+
+Find `.text` section and set `<code-len>` to the first 32-bit value (`04cfa6b6` below) and `<code-offset>` to the last 32-bit value (`00000400` below). All values are in hex so add a 0x prefix when passing the values to `bench.py`.
+
+```text
+$ objdump -h filename.dll
+
+...
+Sections:
+Idx Name          Size      VMA               LMA               File off  Algn
+  0 .text         04cfa6b6  0000000180001000  0000000180001000  00000400  2**4
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+...
+```
+
 ## Contributing
 
 If you feel like the benchmark for a lib doesn't drive it to its full potential or treats it unfairly, I'd be happy to accept PRs with improvements!

@@ -6,6 +6,7 @@ import re
 import subprocess
 import sys
 import time
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -185,8 +186,15 @@ def run_benchmarks(options: Options, targets: List[BenchInfo]) -> None:
 
 def generate_chart(title: str, what: str, filename: str, libs: Set[DisasmLib], targets: List[BenchResult]) -> None:
     plt.rcdefaults()
-    fig = plt.figure(figsize=(10, 5))
-    ax = fig.add_subplot(1, 1, 1)
+    TEXT_COLOR = "#DDDDDD"
+    mpl.rcParams["text.color"] = TEXT_COLOR
+    mpl.rcParams["axes.labelcolor"] = TEXT_COLOR
+    mpl.rcParams["xtick.color"] = TEXT_COLOR
+    mpl.rcParams["ytick.color"] = TEXT_COLOR
+    mpl.rcParams["axes.edgecolor"] = "#2A2A2A"
+
+    fig = plt.figure(figsize=(10, 5), facecolor="#262626")
+    ax = fig.add_subplot(1, 1, 1, facecolor="#222222")
 
     lib_names = [os.path.basename(target.bench_name) for target in targets]
     y_pos = np.arange(len(lib_names))
@@ -197,11 +205,11 @@ def generate_chart(title: str, what: str, filename: str, libs: Set[DisasmLib], t
         y_pos,
         mbs,
         align="center",
-        color="#9999FF"
-    )[best].set_color("lightgreen")
+        color="#3058AD"
+    )[best].set_color("#3D7A23")
     ax.set_yticks(y_pos)
     ax.set_yticklabels(lib_names)
-    ax.invert_yaxis()  # labels read top-to-bottom
+    ax.invert_yaxis()
     ax.set_xlabel("MB/s")
     ax.set_title(f"{title} ({what})" if len(what) != 0 else title)
     plt.subplots_adjust(left=0.2, right=0.95, top=0.9, bottom=0.1)
@@ -272,8 +280,10 @@ def main() -> None:
 
     print("[*] Generating charts and MD tables")
     libs = set(target.lib for target in targets)
-    generate_chart("Throughput", "", "bench.png", libs, [BenchResult(
-        x.bench_kind, x.bench_name, x.lib, x.time_s, x.mb_per_secs) for x in targets])
+    show_all = False
+    if show_all:
+        generate_chart("Throughput", "", "bench.png", libs, [BenchResult(
+            x.bench_kind, x.bench_name, x.lib, x.time_s, x.mb_per_secs) for x in targets])
     generate_chart("Throughput", "decode only", "bench-decode.png", libs, [BenchResult(
         x.bench_kind, x.lib.name_flags_lang, x.lib, x.time_s, x.mb_per_secs) for x in targets if x.bench_kind == BenchKind.DECODE])
     generate_chart("Throughput", "decode + format", "bench-decode-fmt.png", libs, [BenchResult(
@@ -304,7 +314,7 @@ def main() -> None:
                    [info for _, info in fmt_list])
     print("This is `time(format) = time(decode+format) - time(decode)` converted to MB/s.")
     print()
-    print("See all created *.png files and all MD tables above")
+    print("[+] See all created *.png files and all MD tables above")
 
 
 main()

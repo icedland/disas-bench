@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Dict, List
+from typing import Dict, List, Set
 import os
 import platform
 import re
@@ -16,7 +16,7 @@ root_dir = os.path.dirname(os.path.realpath(__file__))
 class Options:
     code_filename = os.path.join(root_dir, "input", "xul.dll")
     file_code_offs = 0x400
-    file_code_len = 0x2460400
+    file_code_len = 0x24603E1
     code_loop_count = 20
 
 
@@ -36,6 +36,28 @@ class DisasmLib:
             self.language_str = "Rust"
         else:
             raise ValueError(f"Invalid LangKind: {language}")
+        if len(flags) == 0:
+            self.name_flags = name
+        else:
+            self.name_flags = f"{name} ({', '.join(flags)})"
+        self.name_flags_lang = f"{self.name_flags} ({self.language_str})"
+
+    def __equals(self, o: "DisasmLib") -> bool:
+        return self.name == o.name and self.language == o.language and self.flags == o.flags
+
+    def __eq__(self, o: object) -> bool:
+        if type(o) == DisasmLib:
+            return self.__equals(o)
+        return False
+
+    def __ne__(self, o: object) -> bool:
+        if type(o) == DisasmLib:
+            return self.__equals(o)
+        return False
+
+    def __hash__(self) -> int:
+        return hash(self.name) ^ hash(self.language) ^ sum(hash(a)
+                                                           for a in self.flags)
 
 
 class BenchKind(IntEnum):
@@ -54,11 +76,6 @@ class BenchInfo:
         self.lib = lib
         self.rel_path = rel_path
         self.full_path = os.path.join(root_dir, rel_path)
-        if len(lib.flags) == 0:
-            self.name_flags = lib.name
-        else:
-            self.name_flags = f"{lib.name} ({', '.join(lib.flags)})"
-        self.name_flags_lang = f"{self.name_flags} ({lib.language_str})"
 
         if bench_kind == BenchKind.DECODE_FMT:
             bench_str = "decode+fmt"
@@ -68,35 +85,42 @@ class BenchInfo:
             bench_str = "fmt"
         else:
             raise ValueError(f"Invalid enumvalue {bench_kind}")
-        self.bench_name = f"{self.name_flags} {bench_str}"
+        self.bench_name = f"{lib.name_flags} {bench_str}"
 
         self.time_s = 0.0
         self.mb_per_secs = 0.0
 
 
 class BenchResult:
-    def __init__(self, bench_kind: BenchKind, bench_name: str, time_s: float, mb_per_secs: float) -> None:
+    def __init__(self, bench_kind: BenchKind, bench_name: str, lib: DisasmLib, time_s: float, mb_per_secs: float) -> None:
         self.bench_kind = bench_kind
         self.bench_name = bench_name
+        self.lib = lib
         self.time_s = time_s
         self.mb_per_secs = mb_per_secs
 
 
-def parse_command_line():
+def to_int(s: str) -> int:
+    if s.startswith("0x"):
+        return int(s[2:], 16)
+    return int(s)
+
+
+def parse_command_line() -> Options:
     options = Options()
 
     if len(sys.argv) == 1:
         pass
     elif len(sys.argv) == 4 or len(sys.argv) == 5:
-        options.file_code_offs = int(sys.argv[1])
-        options.file_code_len = int(sys.argv[2])
+        options.file_code_offs = to_int(sys.argv[1])
+        options.file_code_len = to_int(sys.argv[2])
         options.code_filename = sys.argv[3]
         if len(sys.argv) >= 5:
-            options.code_loop_count = int(sys.argv[4])
+            options.code_loop_count = to_int(sys.argv[4])
         else:
             # Match the old file + loop-count
             options.code_loop_count = max(
-                1, round(0x2460400 * 20 / options.file_code_len))
+                1, round(0x24603E1 * 20 / options.file_code_len))
     else:
         print("Expected no args or:")
         print(
@@ -119,7 +143,7 @@ def parse_command_line():
     return options
 
 
-def run_benchmarks(options: Options, targets: List[BenchInfo]):
+def run_benchmarks(options: Options, targets: List[BenchInfo]) -> None:
     # Open & read file once before to make sure it's in OS cache.
     with open(options.code_filename, "rb") as f:
         f.read()
@@ -159,13 +183,13 @@ def run_benchmarks(options: Options, targets: List[BenchInfo]):
         print(f"[+] Completed in {total_s:.2f} ({diff:.2f}) seconds")
 
 
-def generate_chart(title: str, what: str, filename: str, targets: List[BenchResult]):
+def generate_chart(title: str, what: str, filename: str, libs: Set[DisasmLib], targets: List[BenchResult]) -> None:
     plt.rcdefaults()
     fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(1, 1, 1)
 
-    libs = [os.path.basename(target.bench_name) for target in targets]
-    y_pos = np.arange(len(libs))
+    lib_names = [os.path.basename(target.bench_name) for target in targets]
+    y_pos = np.arange(len(lib_names))
     mbs = [x for x in map(lambda target: target.mb_per_secs, targets)]
     best = mbs.index(max(mbs))
 
@@ -176,7 +200,7 @@ def generate_chart(title: str, what: str, filename: str, targets: List[BenchResu
         color="#9999FF"
     )[best].set_color("lightgreen")
     ax.set_yticks(y_pos)
-    ax.set_yticklabels(libs)
+    ax.set_yticklabels(lib_names)
     ax.invert_yaxis()  # labels read top-to-bottom
     ax.set_xlabel("MB/s")
     ax.set_title(f"{title} ({what})" if len(what) != 0 else title)
@@ -184,20 +208,40 @@ def generate_chart(title: str, what: str, filename: str, targets: List[BenchResu
     fig.savefig(filename)
 
     print_md_table = len(what) != 0
+    if len(what) == 0:
+        what = "All"
+    print()
+    print(f"# {what}")
+    print()
+    print(f"![{what}]({filename})")
+    print()
     if print_md_table:
-        print()
-        if len(what) == 0:
-            what = "All"
-        print(f"# {what}:")
-        print()
-        print("Library | MB/s")
-        print("--------|-----")
-        for target in sorted(targets, key=lambda target: (target.bench_kind, target.time_s)):
-            print(f"{target.bench_name} | {target.mb_per_secs:.2f}")
+        print("Library | MB/s | %")
+        print("--------|------|--")
+        # We ignore 'lib.flags' here
+        not_used_libs = set((lib.name, lib.language, lib.language_str)
+                            for lib in libs)
+        sorted_targets = sorted(targets, key=lambda target: (
+            target.bench_kind, target.time_s))
+        best_time_s = sorted_targets[0].time_s
+        for target in sorted_targets:
+            print(
+                f"{target.bench_name} | {target.mb_per_secs:.2f} MB/s | {best_time_s / target.time_s * 100:.2f}%")
+            key = (target.lib.name, target.lib.language,
+                   target.lib.language_str)
+            if key in not_used_libs:
+                not_used_libs.remove(key)
+        not_used_libs = sorted(
+            not_used_libs, key=lambda lib: (lib[0].lower(), lib[1]))
+        not_used_libs = [f"`{lib[0]} ({lib[2]})`" for lib in not_used_libs]
+        if len(not_used_libs) != 0:
+            dont = "doesn't" if len(not_used_libs) == 1 else "don't"
+            print()
+            print(f"{', '.join(not_used_libs)} {dont} support `{what}`.")
         print()
 
 
-def main():
+def main() -> None:
     # fmt: off
     targets = [
         # Decode + format
@@ -227,18 +271,19 @@ def main():
     run_benchmarks(options, targets)
 
     print("[*] Generating charts and MD tables")
-    generate_chart("Throughput", "", "bench.png", [BenchResult(
-        x.bench_kind, x.bench_name, x.time_s, x.mb_per_secs) for x in targets])
-    generate_chart("Throughput", "decode + format", "bench-decode-fmt.png", [BenchResult(
-        x.bench_kind, x.name_flags_lang, x.time_s, x.mb_per_secs) for x in targets if x.bench_kind == BenchKind.DECODE_FMT])
-    generate_chart("Throughput", "decode only", "bench-decode.png", [BenchResult(
-        x.bench_kind, x.name_flags_lang, x.time_s, x.mb_per_secs) for x in targets if x.bench_kind == BenchKind.DECODE])
+    libs = set(target.lib for target in targets)
+    generate_chart("Throughput", "", "bench.png", libs, [BenchResult(
+        x.bench_kind, x.bench_name, x.lib, x.time_s, x.mb_per_secs) for x in targets])
+    generate_chart("Throughput", "decode only", "bench-decode.png", libs, [BenchResult(
+        x.bench_kind, x.lib.name_flags_lang, x.lib, x.time_s, x.mb_per_secs) for x in targets if x.bench_kind == BenchKind.DECODE])
+    generate_chart("Throughput", "decode + format", "bench-decode-fmt.png", libs, [BenchResult(
+        x.bench_kind, x.lib.name_flags_lang, x.lib, x.time_s, x.mb_per_secs) for x in targets if x.bench_kind == BenchKind.DECODE_FMT])
 
     to_index = {target: i for i, target in enumerate(targets)}
     d: Dict[str, List[BenchInfo]] = dict()
     for target in targets:
-        d.setdefault(target.name_flags_lang, [])
-        d.get(target.name_flags_lang).append(target)
+        d.setdefault(target.lib.name_flags_lang, [])
+        d.get(target.lib.name_flags_lang).append(target)
     fmt_list: List[(int, BenchInfo)] = []
     for l in d.values():
         if len(l) == 1:
@@ -253,10 +298,11 @@ def main():
         if time_s <= 0:
             raise ValueError(f"Invalid elapsed time: {time_s}")
         fmt_list.append((min(to_index[l[0]], to_index[l[1]]), BenchResult(
-            BenchKind.FMT, obj[BenchKind.DECODE].name_flags_lang, time_s, options.file_code_len / 1024 / 1024 * options.code_loop_count / time_s)))
+            BenchKind.FMT, l[0].lib.name_flags_lang, l[0].lib, time_s, options.file_code_len / 1024 / 1024 * options.code_loop_count / time_s)))
     fmt_list.sort(key=lambda a: a[0])
-    generate_chart("Throughput", "format only", "bench-fmt.png",
+    generate_chart("Throughput", "format only", "bench-fmt.png", libs,
                    [info for _, info in fmt_list])
+    print("This is `time(format) = time(decode+format) - time(decode)` converted to MB/s.")
     print()
     print("See all created *.png files and all MD tables above")
 

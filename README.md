@@ -5,8 +5,62 @@ This repository holds benchmarking code for various x86/x86-64 disassembler libr
 
 ## Results
 
-![Bench](bench.png)
-linux 5.4.72 (WSL2), GCC 8.4.0, Rust 1.50.0, i5-6600K
+Ubuntu 20.04 (WSL2), GCC 8.4.0, Rust 1.50.0, i5-6600K.
+
+Test file: xul.dll from Firefox 86.0.1.7739.
+
+# decode only
+
+![decode only](bench-decode.png)
+
+Library | MB/s | %
+--------|------|--
+iced (Rust) | 205.95 MB/s | 100.00%
+yaxpeax (Rust) | 180.28 MB/s | 87.54%
+diStorm (C) | 91.03 MB/s | 44.20%
+udis86 (C) | 76.37 MB/s | 37.08%
+Zydis (min) (C) | 66.14 MB/s | 32.11%
+XED (C) | 55.75 MB/s | 27.07%
+bddisasm (C) | 34.97 MB/s | 16.98%
+Zydis (C) | 32.71 MB/s | 15.88%
+
+`BeaEngine (C)`, `Capstone (C)` don't support `decode only`.
+
+
+# decode + format
+
+![decode + format](bench-decode-fmt.png)
+
+Library | MB/s | %
+--------|------|--
+iced (Rust) | 115.01 MB/s | 100.00%
+diStorm (C) | 58.23 MB/s | 50.63%
+yaxpeax (Rust) | 39.85 MB/s | 34.65%
+Zydis (C) | 20.99 MB/s | 18.25%
+bddisasm (C) | 15.83 MB/s | 13.77%
+XED (C) | 15.14 MB/s | 13.17%
+Capstone (C) | 13.62 MB/s | 11.84%
+BeaEngine (C) | 13.32 MB/s | 11.58%
+udis86 (C) | 11.62 MB/s | 10.10%
+
+
+# format only
+
+![format only](bench-fmt.png)
+
+Library | MB/s | %
+--------|------|--
+iced (Rust) | 260.45 MB/s | 100.00%
+diStorm (C) | 161.59 MB/s | 62.04%
+Zydis (C) | 58.56 MB/s | 22.49%
+yaxpeax (Rust) | 51.16 MB/s | 19.64%
+bddisasm (C) | 28.94 MB/s | 11.11%
+XED (C) | 20.79 MB/s | 7.98%
+udis86 (C) | 13.70 MB/s | 5.26%
+
+`BeaEngine (C)`, `Capstone (C)` don't support `format only`.
+
+This is `time(format) = time(decode+format) - time(decode)` converted to MB/s.
 
 ## Candidates
 
@@ -84,7 +138,7 @@ SECTION HEADER #1
 Find `.text` section and set `<code-len>` to the first 32-bit value (`04cfa6b6` below) and `<code-offset>` to the last 32-bit value (`00000400` below). All values are in hex so add a 0x prefix when passing the values to `bench.py`.
 
 ```text
-$ objdump -h filename.dll
+$ objdump -h filename
 
 ...
 Sections:

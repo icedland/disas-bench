@@ -53,7 +53,7 @@ class DisasmLib:
 
     def __ne__(self, o: object) -> bool:
         if type(o) == DisasmLib:
-            return self.__equals(o)
+            return not self.__equals(o)
         return False
 
     def __hash__(self) -> int:

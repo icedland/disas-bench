@@ -289,30 +289,35 @@ def main() -> None:
     generate_chart("Throughput", "decode + format", "bench-decode-fmt.png", libs, [BenchResult(
         x.bench_kind, x.lib.name_flags_lang, x.lib, x.time_s, x.mb_per_secs) for x in targets if x.bench_kind == BenchKind.DECODE_FMT])
 
-    to_index = {target: i for i, target in enumerate(targets)}
-    d: Dict[str, List[BenchInfo]] = dict()
-    for target in targets:
-        d.setdefault(target.lib.name_flags_lang, [])
-        d.get(target.lib.name_flags_lang).append(target)
-    fmt_list: List[(int, BenchInfo)] = []
-    for l in d.values():
-        if len(l) == 1:
-            continue
-        if len(l) != 2:
-            raise ValueError(f"Expected 1 or 2 elements but got {len(l)}")
-        obj = {e.bench_kind: e for e in l}
-        if BenchKind.DECODE_FMT not in obj or BenchKind.DECODE not in obj:
-            raise ValueError("Couldn't find decode+fmt and decode benchmarks")
-        time_s = obj[BenchKind.DECODE_FMT].time_s - \
-            obj[BenchKind.DECODE].time_s
-        if time_s <= 0:
-            raise ValueError(f"Invalid elapsed time: {time_s}")
-        fmt_list.append((min(to_index[l[0]], to_index[l[1]]), BenchResult(
-            BenchKind.FMT, l[0].lib.name_flags_lang, l[0].lib, time_s, options.file_code_len / 1024 / 1024 * options.code_loop_count / time_s)))
-    fmt_list.sort(key=lambda a: a[0])
-    generate_chart("Throughput", "format only", "bench-fmt.png", libs,
-                   [info for _, info in fmt_list])
-    print("This is `time(format) = time(decode+format) - time(decode)` converted to MB/s.")
+    show_fmt_only = False
+    if show_fmt_only:
+        to_index = {target: i for i, target in enumerate(targets)}
+        d: Dict[str, List[BenchInfo]] = dict()
+        for target in targets:
+            d.setdefault(target.lib.name_flags_lang, [])
+            d.get(target.lib.name_flags_lang).append(target)
+        fmt_list: List[(int, BenchInfo)] = []
+        for l in d.values():
+            if len(l) == 1:
+                continue
+            if len(l) != 2:
+                raise ValueError(f"Expected 1 or 2 elements but got {len(l)}")
+            obj = {e.bench_kind: e for e in l}
+            if BenchKind.DECODE_FMT not in obj or BenchKind.DECODE not in obj:
+                raise ValueError(
+                    "Couldn't find decode+fmt and decode benchmarks")
+            time_s = obj[BenchKind.DECODE_FMT].time_s - \
+                obj[BenchKind.DECODE].time_s
+            if time_s <= 0:
+                raise ValueError(f"Invalid elapsed time: {time_s}")
+            fmt_list.append((min(to_index[l[0]], to_index[l[1]]), BenchResult(
+                BenchKind.FMT, l[0].lib.name_flags_lang, l[0].lib, time_s, options.file_code_len / 1024 / 1024 * options.code_loop_count / time_s)))
+        fmt_list.sort(key=lambda a: a[0])
+        generate_chart("Throughput", "format only", "bench-fmt.png", libs,
+                       [info for _, info in fmt_list])
+        print(
+            "This is `time(format) = time(decode+format) - time(decode)` converted to MB/s.")
+
     print()
     print("[+] See all created *.png files and all MD tables above")
 

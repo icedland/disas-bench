@@ -1,5 +1,5 @@
 make-bench-beaengine:
-	cl main.c -GL -O2 -Fe:bench-beaengine-fmt -DBEA_ENGINE_STATIC -I../../libs/beaengine/include ../../libs/beaengine/build/lib/Windows.msvc.Release.64/Release/BeaEngine_s_l_64.lib
+	"$(CC)" main.c -GL -O2 -Fe:bench-beaengine-fmt -DBEA_ENGINE_STATIC -I../../libs/beaengine/include ../../libs/beaengine/build/lib/Windows.msvc.Release.64/Release/BeaEngine_s_l_64.lib
 
 clean:
 	rm -f bench-beaengine* *.obj

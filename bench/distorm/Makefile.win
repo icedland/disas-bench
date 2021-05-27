@@ -1,6 +1,6 @@
 make-bench-distorm:
-	cl main.c -GL -O2 -Fe:bench-distorm-fmt -I../../libs/distorm/include ../../libs/distorm/distorm.lib
-	cl main.c -GL -O2 -Fe:bench-distorm-no-fmt -DDISAS_BENCH_NO_FORMAT -I../../libs/distorm/include ../../libs/distorm/distorm.lib
+	"$(CC)" main.c -GL -O2 -Fe:bench-distorm-fmt -I../../libs/distorm/include ../../libs/distorm/distorm.lib
+	"$(CC)" main.c -GL -O2 -Fe:bench-distorm-no-fmt -DDISAS_BENCH_NO_FORMAT -I../../libs/distorm/include ../../libs/distorm/distorm.lib
 
 clean:
 	rm -f bench-distorm* *.obj

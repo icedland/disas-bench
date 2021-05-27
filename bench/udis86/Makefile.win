@@ -1,6 +1,6 @@
 make-bench-udis86:
-	cl main.c -MD -GL -O2 -Fe:bench-udis86-fmt -I../../libs/udis86 ../../libs/udis86/BuildVS2010/Build/Lib/x64/libudis86.lib
-	cl main.c -MD -GL -O2 -Fe:bench-udis86-no-fmt -DDISAS_BENCH_NO_FORMAT -I../../libs/udis86 ../../libs/udis86/BuildVS2010/Build/Lib/x64/libudis86.lib
+	"$(CC)" main.c -MD -GL -O2 -Fe:bench-udis86-fmt -I../../libs/udis86 ../../libs/udis86/BuildVS2010/Build/Lib/x64/libudis86.lib
+	"$(CC)" main.c -MD -GL -O2 -Fe:bench-udis86-no-fmt -DDISAS_BENCH_NO_FORMAT -I../../libs/udis86 ../../libs/udis86/BuildVS2010/Build/Lib/x64/libudis86.lib
 
 clean:
 	rm -f bench-udis86* *.obj

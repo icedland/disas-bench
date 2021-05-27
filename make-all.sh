@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -e
 
+#compiler=clang
+#compiler=gcc
+compiler=whatever
+
 if [[ `uname -s` == "MINGW"* ]]; then
     is_windows=y
 elif [[ `uname -s` == "Darwin" ]]; then
@@ -8,6 +12,57 @@ elif [[ `uname -s` == "Darwin" ]]; then
 else
     is_linux=y
 fi
+
+case "$compiler" in
+"clang")
+    if [[ "$is_windows" == "y" ]]; then
+        if [[ ! `which clang-cl.exe` ]]; then
+            echo "[-] Unable to find clang-cl, is it installed?" 1>&2
+            exit 1
+        fi
+        export CC=$(cygpath -m "$(which clang-cl.exe)")
+        export CXX="$CC"
+        export AR=$(cygpath -m "$(which llvm-ar)")
+        export RANLIB=$(cygpath -m "$(which llvm-ranlib)")
+    else
+        export CC=$(which clang)
+        export CXX=$(which clang++)
+        export AR=$(which llvm-ar)
+        export RANLIB=$(which llvm-ranlib)
+    fi
+    BEAENGINE_CLANG=-DUSE_CLANG=on
+    export BEA_COMPILER_NAME=clang
+    XEDCOMPILER="--compiler=clang"
+    MSBUILD_TOOLSET=-p:PlatformToolset=ClangCL
+    ;;
+"gcc")
+    export CC=$(which gcc)
+    export CXX=$(which g++)
+    export AR=$(which gcc-ar)
+    export RANLIB=$(which gcc-ranlib)
+    export BEA_COMPILER_NAME=gnu
+    XEDCOMPILER="--compiler=gcc"
+    ;;
+"whatever")
+    MSBUILD_TOOLSET=-p:PlatformToolset=v142
+    if [[ "$is_windows" == "y" ]]; then
+        export CC=$(cygpath -w "$(which cl.exe)")
+        export CXX="$CC"
+    else
+        # Assume gcc
+        export CC=$(which gcc)
+        export CXX=$(which g++)
+        export AR=$(which gcc-ar)
+        export RANLIB=$(which gcc-ranlib)
+        export BEA_COMPILER_NAME=gnu
+        XEDCOMPILER="--compiler=gcc"
+    fi
+    ;;
+*)
+    echo "Invalid compiler option: $compiler";
+    exit 1
+    ;;
+esac
 
 if [[ "$is_windows" == "y" ]]; then
     make='nmake -f Makefile.win'
@@ -40,14 +95,6 @@ else
         echo "[-] Unable to find cargo (Rust), is it installed?" 1>&2
         exit 1
     fi
-    if [[ ! `which gcc-ar` ]]; then
-        echo "[-] Unable to find gcc-ar, is it installed?" 1>&2
-        exit 1
-    fi
-    if [[ ! `which gcc-ranlib` ]]; then
-        echo "[-] Unable to find gcc-ranlib, is it installed?" 1>&2
-        exit 1
-    fi
 fi
 
 # Build Capstone
@@ -58,9 +105,9 @@ mkdir -p build
 cd build
 if [[ "$is_windows" == "y" ]]; then
     cmake -DCMAKE_BUILD_TYPE=Release -DCAPSTONE_BUILD_STATIC_RUNTIME=ON -DCAPSTONE_ARCHITECTURE_DEFAULT=OFF -DCAPSTONE_X86_SUPPORT=ON ..
-    msbuild.exe capstone-static.vcxproj -p:Configuration=Release -p:Platform=x64 -p:WholeProgramOptimization=true
+    msbuild.exe capstone-static.vcxproj -p:Configuration=Release -p:Platform=x64 $MSBUILD_TOOLSET -p:WholeProgramOptimization=true
 else
-    CFLAGS=-flto cmake -DCMAKE_BUILD_TYPE=Release -DCAPSTONE_BUILD_STATIC_RUNTIME=ON -DCAPSTONE_ARCHITECTURE_DEFAULT=OFF -DCAPSTONE_X86_SUPPORT=ON -DCMAKE_AR=$(which gcc-ar) -DCMAKE_RANLIB=$(which gcc-ranlib) ..
+    CFLAGS=-flto cmake -DCMAKE_BUILD_TYPE=Release -DCAPSTONE_BUILD_STATIC_RUNTIME=ON -DCAPSTONE_ARCHITECTURE_DEFAULT=OFF -DCAPSTONE_X86_SUPPORT=ON -DCMAKE_AR="$AR" -DCMAKE_RANLIB="$RANLIB" ..
     make capstone-static
 fi
 cd ../../..
@@ -70,9 +117,10 @@ cd ../../..
 echo "[*] Building XED ..."
 cd libs/intelxed
 if [[ "$is_windows" == "y" ]]; then
-    $python mfile.py --no-encoder --opt=3 --extra-flags=-GL
+    # No clang, it fails when building it. Also disabled in Makefile.win
+    $python mfile.py --no-encoder -v 3 --opt=3 --extra-flags=-GL
 else
-    $python mfile.py --no-encoder --opt=3 --extra-flags=-flto --ar=$(which gcc-ar)
+    $python mfile.py --no-encoder -v 3 --opt=3 --extra-flags=-flto $XEDCOMPILER --ar="$AR"
 fi
 cd ../..
 
@@ -88,9 +136,12 @@ else
 fi
 cd libs/distorm/make/${distorm_subdir}
 if [[ "$is_windows" == "y" ]]; then
-    msbuild.exe cdistorm.vcxproj -p:Configuration=clib -p:Platform=x64 -p:WholeProgramOptimization=true
+    msbuild.exe cdistorm.vcxproj -p:Configuration=clib -p:Platform=x64 $MSBUILD_TOOLSET -p:WholeProgramOptimization=true
 else
-    sed -i -e 's/ar rs/gcc-ar rs/' Makefile
+    if [[ "$compiler" == "clang" ]]; then
+        sed -i -e 's/^CC\s*=\s*gcc$/CC = clang/' Makefile
+    fi
+    sed -i -e "s#ar rs#$AR rs#" Makefile
     sed -i -e 's/CFLAGS\s*=/CFLAGS +=/' Makefile
     CFLAGS=-flto make
     git checkout Makefile
@@ -102,12 +153,16 @@ cd ../../../..
 echo "[*] Building bddisasm ..."
 cd libs/bddisasm
 if [[ "$is_windows" == "y" ]]; then
-    msbuild.exe bddisasm/bddisasm.vcxproj -p:Configuration=Release -p:Platform=x64 -p:WholeProgramOptimization=true
+    if [[ "$compiler" == "clang" ]]; then
+        sed -i -e 's/.*IgnoreAllDefaultLibraries.*//' bddisasm/bddisasm.vcxproj
+    fi
+    msbuild.exe bddisasm/bddisasm.vcxproj -p:Configuration=Release -p:Platform=x64 $MSBUILD_TOOLSET -p:WholeProgramOptimization=true
+    git checkout bddisasm/bddisasm.vcxproj
     cd ../..
 else
     mkdir -p build
     cd build
-    CFLAGS=-flto cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_AR=$(which gcc-ar) -DCMAKE_RANLIB=$(which gcc-ranlib) ..
+    CFLAGS=-flto cmake -DCMAKE_BUILD_TYPE=Release -DBDD_USE_EXTERNAL_VSNPRINTF=ON -DBDD_USE_EXTERNAL_MEMSET=ON -DCMAKE_AR="$AR" -DCMAKE_RANLIB="$RANLIB" ..
     make bddisasm
     cd ../../..
 fi
@@ -120,9 +175,7 @@ cd libs/udis86
 sed -i -e 's/indent, k, e/indent, int(k), e/' scripts/ud_opcode.py
 if [[ "$is_windows" == "y" ]]; then
     $python scripts/ud_itab.py docs/x86/optable.xml libudis86/
-    # If this fails, change the PlatformToolset version to whatever version of VS you have installed
-    #   https://docs.microsoft.com/cpp/build/how-to-modify-the-target-framework-and-platform-toolset#platform-toolset
-    msbuild.exe BuildVS2010/libudis86.vcxproj -p:Configuration=Release -p:Platform=x64 -p:PlatformToolset=v142 -p:WholeProgramOptimization=true
+    msbuild.exe BuildVS2010/libudis86.vcxproj -p:Configuration=Release -p:Platform=x64 $MSBUILD_TOOLSET -p:WholeProgramOptimization=true
 else
     ./autogen.sh
     # We can't enable lto because it gets extremely slow
@@ -140,9 +193,9 @@ mkdir -p build
 cd build
 sed -i -e 's/APPEND BEA_FLAGS -fomit-frame-pointer -O2/APPEND BEA_FLAGS -fomit-frame-pointer -O3 -flto/' ../CMakeLists.txt
 # It's decode+disasm unless `-DoptBUILD_LITE=on` is used (decode only), but if we add it, we get errors
-cmake -DoptHAS_OPTIMIZED=on -DoptHAS_SYMBOLS=off -DoptBUILD_64BIT=on ..
+cmake -DoptHAS_OPTIMIZED=on -DoptHAS_SYMBOLS=off -DoptBUILD_64BIT=on $BEAENGINE_CLANG ..
 if [[ "$is_windows" == "y" ]]; then
-    msbuild.exe BeaEngine.sln -p:Configuration=Release -p:Platform=x64 -p:WholeProgramOptimization=true
+    msbuild.exe BeaEngine.sln -p:Configuration=Release -p:Platform=x64 $MSBUILD_TOOLSET -p:WholeProgramOptimization=true
 else
     make
 fi
@@ -162,11 +215,11 @@ if [[ "$is_windows" == "y" ]]; then
     mkdir -p build
     cd build
     cmake -DCMAKE_BUILD_TYPE=Release ..
-    msbuild.exe bench-zydis.sln -p:Configuration=Release -p:Platform=x64 -p:WholeProgramOptimization=true
+    msbuild.exe bench-zydis.sln -p:Configuration=Release -p:Platform=x64 $MSBUILD_TOOLSET -p:WholeProgramOptimization=true
     cp Release/*.exe ..
     cd ..
 else
-    CFLAGS=-flto cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_AR=$(which gcc-ar) -DCMAKE_RANLIB=$(which gcc-ranlib) .
+    CFLAGS=-flto cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_AR="$AR" -DCMAKE_RANLIB="$RANLIB" .
     $make
 fi
 cd ../..

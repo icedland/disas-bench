@@ -1,5 +1,5 @@
 make-bench-cs:
-	cl main.c -GL -O2 -Fe:bench-cs-fmt -I../../libs/capstone/include ../../libs/capstone/build/Release/capstone.lib
+	"$(CC)" main.c -GL -O2 -Fe:bench-cs-fmt -I../../libs/capstone/include ../../libs/capstone/build/Release/capstone.lib
 
 clean:
 	rm -f bench-cs* *.obj

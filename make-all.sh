@@ -41,7 +41,7 @@ case "$compiler" in
     export AR=$(which gcc-ar)
     export RANLIB=$(which gcc-ranlib)
     export BEA_COMPILER_NAME=gnu
-    XEDCOMPILER="--compiler=gcc"
+    XEDCOMPILER="--compiler=gnu"
     ;;
 "whatever")
     MSBUILD_TOOLSET=-p:PlatformToolset=v142
@@ -55,7 +55,7 @@ case "$compiler" in
         export AR=$(which gcc-ar)
         export RANLIB=$(which gcc-ranlib)
         export BEA_COMPILER_NAME=gnu
-        XEDCOMPILER="--compiler=gcc"
+        XEDCOMPILER="--compiler=gnu"
     fi
     ;;
 *)

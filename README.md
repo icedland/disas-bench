@@ -78,7 +78,7 @@ Windows/Linux/macOS:
 
 ```bash
 git clone --recursive 'https://github.com/icedland/disas-bench.git'
-cd disas-bench.git
+cd disas-bench
 ./make-all.sh
 # Windows: python
 python3 -mvenv venv

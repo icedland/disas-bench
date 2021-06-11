@@ -5,7 +5,7 @@ This repository holds benchmarking code for various x86/x86-64 disassembler libr
 
 ## Results
 
-Windows 10, msvc 19.29, Rust 1.52.1, i5-6600K.
+Kubuntu 21.04, gcc 10.3.0, Rust 1.52.1, i5-6600K.
 
 Test file: xul.dll from Firefox 86.0.1.7739 (77MB code section).
 
@@ -15,14 +15,14 @@ Test file: xul.dll from Firefox 86.0.1.7739 (77MB code section).
 
 Library | MB/s | %
 --------|------|--
-iced (Rust) | 257.07 MB/s | 100.00%
-yaxpeax (Rust) | 177.55 MB/s | 69.07%
-diStorm (C) | 79.95 MB/s | 31.10%
-udis86 (C) | 70.35 MB/s | 27.37%
-Zydis (min) (C) | 51.99 MB/s | 20.22%
-XED (C) | 43.45 MB/s | 16.90%
-bddisasm (C) | 33.69 MB/s | 13.10%
-Zydis (C) | 27.96 MB/s | 10.88%
+iced (Rust) | 256.69 MB/s | 100.00%
+yaxpeax (Rust) | 182.08 MB/s | 70.93%
+diStorm (C) | 92.17 MB/s | 35.91%
+udis86 (C) | 80.72 MB/s | 31.44%
+Zydis (min) (C) | 61.33 MB/s | 23.89%
+XED (C) | 55.39 MB/s | 21.58%
+bddisasm (C) | 35.48 MB/s | 13.82%
+Zydis (C) | 34.19 MB/s | 13.32%
 
 `BeaEngine (C)`, `Capstone (C)` don't support `decode only`.
 
@@ -33,15 +33,15 @@ Zydis (C) | 27.96 MB/s | 10.88%
 
 Library | MB/s | %
 --------|------|--
-iced (Rust) | 135.71 MB/s | 100.00%
-diStorm (C) | 51.66 MB/s | 38.07%
-yaxpeax (Rust) | 36.71 MB/s | 27.05%
-Zydis (C) | 18.62 MB/s | 13.72%
-BeaEngine (C) | 14.65 MB/s | 10.79%
-bddisasm (C) | 13.69 MB/s | 10.09%
-udis86 (C) | 12.00 MB/s | 8.84%
-Capstone (C) | 11.21 MB/s | 8.26%
-XED (C) | 11.18 MB/s | 8.24%
+iced (Rust) | 149.21 MB/s | 100.00%
+diStorm (C) | 58.85 MB/s | 39.44%
+yaxpeax (Rust) | 40.05 MB/s | 26.84%
+Zydis (C) | 22.24 MB/s | 14.91%
+bddisasm (C) | 16.00 MB/s | 10.72%
+XED (C) | 15.67 MB/s | 10.50%
+Capstone (C) | 14.02 MB/s | 9.39%
+BeaEngine (C) | 13.42 MB/s | 8.99%
+udis86 (C) | 12.02 MB/s | 8.05%
 
 
 ## Candidates
